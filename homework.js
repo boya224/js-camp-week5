@@ -57,6 +57,15 @@ const orders = [
  */
 function getProductById(products, productId) {
   // 請實作此函式
+  const targetProduct = products.find(function(item){
+    return item.id === productId;
+  });
+
+  if(targetProduct !== undefined){
+    return targetProduct;
+  }else{
+    return null;
+  }
 }
 
 /**
@@ -67,6 +76,15 @@ function getProductById(products, productId) {
  */
 function getProductsByCategory(products, category) {
   // 請實作此函式
+  if(category === '全部'){
+    return products;
+  }
+
+  const filteredProducts = products.filter(function(item){
+    return item.category === category
+  });
+
+  return filteredProducts;
 }
 
 /**
@@ -77,6 +95,8 @@ function getProductsByCategory(products, category) {
  */
 function getDiscountRate(product) {
   // 請實作此函式
+  const rate = Math.round((product.price/product.origin_price) * 100)/ 10;
+  return`${rate}折`
 }
 
 /**
@@ -86,6 +106,11 @@ function getDiscountRate(product) {
  */
 function getAllCategories(products) {
   // 請實作此函式
+  const allCategories = products.map(function(product){
+    return product.category;
+  });
+   const uniqueCategories = [...new Set(allCategories)];
+   return uniqueCategories;
 }
 
 // ========================================
@@ -99,6 +124,14 @@ function getAllCategories(products) {
  */
 function calculateCartOriginalTotal(carts) {
   // 請實作此函式
+  let total = 0;
+
+  carts.forEach(function(cartItem){
+    const itemTotal = cartItem.product.origin_price * cartItem.quantity;
+    total = total + itemTotal;
+    
+  });
+  return total;
 }
 
 /**
@@ -108,6 +141,14 @@ function calculateCartOriginalTotal(carts) {
  */
 function calculateCartTotal(carts) {
   // 請實作此函式
+  let total = 0; 
+
+  carts.forEach(function(cartItem) {
+    const itemTotal = cartItem.product.price * cartItem.quantity;
+    total = total + itemTotal; 
+  });
+
+  return total;
 }
 
 /**
@@ -117,6 +158,11 @@ function calculateCartTotal(carts) {
  */
 function calculateSavings(carts) {
   // 請實作此函式
+  const original = calculateCartOriginalTotal(carts);
+  
+  const sale = calculateCartTotal(carts);
+  
+  return original - sale;
 }
 
 /**
@@ -126,6 +172,14 @@ function calculateSavings(carts) {
  */
 function calculateCartItemCount(carts) {
   // 請實作此函式
+  let totalCount = 0; // 數量的記帳本
+  
+  carts.forEach(function(cartItem) {
+    
+    totalCount = totalCount + cartItem.quantity;
+  });
+  
+  return totalCount;
 }
 
 /**
@@ -135,7 +189,16 @@ function calculateCartItemCount(carts) {
  * @returns {boolean} - 回傳 true 或 false
  */
 function isProductInCart(carts, productId) {
-  // 請實作此函式
+
+  const target = carts.find(function(cartItem) {
+     return cartItem.product.id === productId;
+  });
+
+  if (target !== undefined) {
+    return true;
+  } else {
+    return false;
+  }
 }
 
 // ========================================
@@ -151,7 +214,30 @@ function isProductInCart(carts, productId) {
  * 如果產品已存在，合併數量；如果不存在，新增一筆
  */
 function addToCart(carts, product, quantity) {
-  // 請實作此函式
+  
+  const existingItem = carts.find(function(cartItem) {
+    return cartItem.product.id === product.id;
+  });
+
+  if (existingItem !== undefined) {
+  
+    return carts.map(function(cartItem) {
+      if (cartItem.product.id === product.id) {
+        return { ...cartItem, quantity: cartItem.quantity + quantity };
+      }
+      return cartItem;
+    });
+
+  } else {
+  
+    const newItem = {
+      id: 'cart-' + new Date().getTime(), 
+      product: product,                   
+      quantity: quantity                   
+    };
+    
+    return [...carts, newItem];
+  }
 }
 
 /**
@@ -162,7 +248,19 @@ function addToCart(carts, product, quantity) {
  * @returns {Array} - 回傳新的購物車陣列，如果 newQuantity <= 0，移除該商品
  */
 function updateCartItemQuantity(carts, cartId, newQuantity) {
-  // 請實作此函式
+  
+  const updatedCarts = carts.map(function(cartItem) {
+    if (cartItem.id === cartId) {
+      
+      return { ...cartItem, quantity: newQuantity }; 
+    }
+    return cartItem; 
+  });
+
+  return updatedCarts.filter(function(cartItem) {
+    return cartItem.quantity > 0; 
+  });
+  
 }
 
 /**
@@ -172,7 +270,9 @@ function updateCartItemQuantity(carts, cartId, newQuantity) {
  * @returns {Array} - 回傳移除後的新購物車陣列
  */
 function removeFromCart(carts, cartId) {
-  // 請實作此函式
+  return carts.filter(function(cartItem) {
+    return cartItem.id !== cartId; 
+  });
 }
 
 /**
@@ -180,7 +280,7 @@ function removeFromCart(carts, cartId) {
  * @returns {Array} - 回傳空陣列
  */
 function clearCart() {
-  // 請實作此函式
+  return [];
 }
 
 // ========================================
@@ -193,7 +293,15 @@ function clearCart() {
  * @returns {number} - 只計算已付款 (paid: true) 的訂單
  */
 function calculateTotalRevenue(orders) {
-  // 請實作此函式
+  let revenue = 0; 
+
+  orders.forEach(function(order) {
+    if (order.paid === true) {
+      revenue = revenue + order.total;
+    }
+  });
+
+  return revenue;
 }
 
 /**
@@ -203,7 +311,9 @@ function calculateTotalRevenue(orders) {
  * @returns {Array} - 回傳篩選後的訂單陣列
  */
 function filterOrdersByStatus(orders, isPaid) {
-  // 請實作此函式
+  return orders.filter(function(order) {
+    return order.paid === isPaid;
+  });
 }
 
 /**
@@ -219,7 +329,26 @@ function filterOrdersByStatus(orders, isPaid) {
  * }
  */
 function generateOrderReport(orders) {
-  // 請實作此函式
+  const totalOrders = orders.length;
+
+  const paidOrdersCount = filterOrdersByStatus(orders, true).length;
+  const unpaidOrdersCount = filterOrdersByStatus(orders, false).length;
+
+  const totalRevenue = calculateTotalRevenue(orders);
+
+  let allOrdersTotal = 0;
+  orders.forEach(function(order) {
+    allOrdersTotal = allOrdersTotal + order.total;
+  });
+  const averageOrderValue = totalOrders === 0 ? 0 : (allOrdersTotal / totalOrders);
+
+  return {
+    totalOrders: totalOrders,
+    paidOrders: paidOrdersCount,
+    unpaidOrders: unpaidOrdersCount,
+    totalRevenue: totalRevenue,
+    averageOrderValue: Math.round(averageOrderValue) 
+  };
 }
 
 /**
@@ -232,7 +361,19 @@ function generateOrderReport(orders) {
  * }
  */
 function groupOrdersByPayment(orders) {
-  // 請實作此函式
+  const result = {}; 
+
+  orders.forEach(function(order) {
+    const method = order.user.payment; 
+    
+    if (result[method] === undefined) {
+      result[method] = []; 
+    }
+
+    result[method].push(order);
+  });
+
+  return result; 
 }
 
 // ========================================
